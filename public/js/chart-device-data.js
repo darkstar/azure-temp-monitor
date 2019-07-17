@@ -11,19 +11,22 @@ $(document).ready(() => {
       this.deviceId = deviceId;
       this.maxLen = 50;
       this.timeData = new Array(this.maxLen);
-      this.temperatureData = new Array(this.maxLen);
-      this.humidityData = new Array(this.maxLen);
+      this.sensor1temperatureData = new Array(this.maxLen);
+      this.cputemperatureData = new Array(this.maxLen);
+      this.pressureData = new Array(this.maxLen);
     }
 
-    addData(time, temperature, humidity) {
+    addData(time, sensortemperature, cputemperature, pressure) {
       this.timeData.push(time);
-      this.temperatureData.push(temperature);
-      this.humidityData.push(humidity || null);
+      this.sensor1temperatureData.push(sensortemperature);
+      this.cputemperatureData.push(cputemperature);
+      this.pressureData.push(pressure || null);
 
       if (this.timeData.length > this.maxLen) {
         this.timeData.shift();
-        this.temperatureData.shift();
-        this.humidityData.shift();
+        this.sensor1temperatureData.shift();
+        this.cputemperatureData.shift();
+        this.pressureData.shift();
       }
     }
   }
@@ -53,7 +56,7 @@ $(document).ready(() => {
     datasets: [
       {
         fill: false,
-        label: 'Temperature',
+        label: 'Sensor Temperature',
         yAxisID: 'Temperature',
         borderColor: 'rgba(255, 204, 0, 1)',
         pointBoarderColor: 'rgba(255, 204, 0, 1)',
@@ -64,8 +67,19 @@ $(document).ready(() => {
       },
       {
         fill: false,
-        label: 'Humidity',
-        yAxisID: 'Humidity',
+        label: 'CPU Temperature',
+        yAxisID: 'Temperature',
+        borderColor: 'rgba(255, 102, 0, 1)',
+        pointBoarderColor: 'rgba(255, 102, 0, 1)',
+        backgroundColor: 'rgba(255, 102, 0, 0.4)',
+        pointHoverBackgroundColor: 'rgba(255, 102, 0, 1)',
+        pointHoverBorderColor: 'rgba(255, 102, 0, 1)',
+        spanGaps: true,
+      },
+      {
+        fill: false,
+        label: 'Pressure',
+        yAxisID: 'Pressure',
         borderColor: 'rgba(24, 120, 240, 1)',
         pointBoarderColor: 'rgba(24, 120, 240, 1)',
         backgroundColor: 'rgba(24, 120, 240, 0.4)',
@@ -79,7 +93,7 @@ $(document).ready(() => {
   const chartOptions = {
     title: {
       display: true,
-      text: 'Temperature & Humidity Real-time Data',
+      text: 'Temperature & Pressure Real-time Data',
       fontSize: 36,
     },
     scales: {
@@ -93,10 +107,10 @@ $(document).ready(() => {
         position: 'left',
       },
       {
-        id: 'Humidity',
+        id: 'Pressure',
         type: 'linear',
         scaleLabel: {
-          labelString: 'Humidity (%)',
+          labelString: 'Pressure (hPa)',
           display: true,
         },
         position: 'right',
@@ -120,8 +134,9 @@ $(document).ready(() => {
   function OnSelectionChange() {
     const device = trackedDevices.findDevice(listOfDevices[listOfDevices.selectedIndex].text);
     chartData.labels = device.timeData;
-    chartData.datasets[0].data = device.temperatureData;
-    chartData.datasets[1].data = device.humidityData;
+    chartData.datasets[0].data = device.sensor1temperatureData;
+    chartData.datasets[1].data = device.cputemperatureData;
+    chartData.datasets[2].data = device.pressureData;
   }
   listOfDevices.addEventListener('change', OnSelectionChange, false);
 
@@ -137,7 +152,7 @@ $(document).ready(() => {
       console.log(messageData);
 
       // time and temperature are required
-      if (!messageData.MessageDate || !messageData.IotData.temperature) {
+      if (!messageData.MessageDate || !messageData.IotData.sensor1temp) {
         return;
       }
 
@@ -145,11 +160,11 @@ $(document).ready(() => {
       const existingDeviceData = trackedDevices.findDevice(messageData.DeviceId);
 
       if (existingDeviceData) {
-        existingDeviceData.addData(messageData.MessageDate, messageData.IotData.temperature, messageData.IotData.humidity);
+        existingDeviceData.addData(messageData.MessageDate, messageData.IotData.sensor1temp, messageData.IotData.cputemp, messageData.IotData.pressure);
       } else {
         const newDeviceData = new DeviceData(messageData.DeviceId);
         trackedDevices.devices.push(newDeviceData);
-        newDeviceData.addData(messageData.MessageDate, messageData.IotData.temperature, messageData.IotData.humidity);
+        newDeviceData.addData(messageData.MessageDate, messageData.IotData.sensor1temp, messageData.IotData.cputemp, messageData.IotData.pressure);
 
         // add device to the UI list
         const node = document.createElement('option');
