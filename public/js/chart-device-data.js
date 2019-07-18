@@ -104,7 +104,7 @@ $(document).ready(() => {
           labelString: 'Temperature (ºC)',
           display: true,
         },
-        position: 'left',
+        position: 'right',
       },
       {
         id: 'Pressure',
@@ -113,7 +113,7 @@ $(document).ready(() => {
           labelString: 'Pressure (hPa)',
           display: true,
         },
-        position: 'right',
+        position: 'left',
       }]
     }
   };
